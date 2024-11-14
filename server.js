@@ -1,30 +1,23 @@
-const express = require("express");
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongodb = require('./db/connect');
+
+const port = process.env.PORT || 8080;
 const app = express();
-const port = 8080;
-const router = require("./routes");
-const mongodb = require("./data/database");
 
-app.use(express.json());
-
-app.use("/api", router);
-
-
-app.set("view engine", "ejs");
-
-app.set("views", "views");
-
+app
+  .use(bodyParser.json())
+  .use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+  })
+  .use('/', require('./routes'));
 
 mongodb.initDb((err) => {
   if (err) {
     console.log(err);
+  } else {
+    app.listen(port);
+    console.log(`Connected to DB and listening on ${port}`);
   }
-  else {
-    console.log("Database initialized successfully");
-  }
-});
-
-
-// Server Start
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
 });
